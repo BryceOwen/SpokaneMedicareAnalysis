@@ -1,0 +1,207 @@
+---
+title: "Project1"
+author: "Bryce Owen"
+date: "3/26/2020"
+output: html_document
+---
+### Load Data and Libraries
+```{r}
+load("/Users/Bryce/DataViz/Project1/providerspokane.RDA")
+library(ggplot2)
+library(tidyverse)
+library(rattle)
+library(magrittr)
+theme_update(plot.title = element_text(hjust = 0.5))
+```
+
+# 1. Mean Provider Type functions
+
+### Function of Average Number of Services and Provider Type
+```{r, fig.width = 10, fig.height = 10}
+Provider_MNoS=providerspokane%>%
+  group_by(Provider.Type)%>%
+  summarise(mean_number_of_services=mean(Number.of.Services))
+MNoS_sort <- arrange(Provider_MNoS, desc(mean_number_of_services))
+
+ggplot(data = MNoS_sort, mapping = aes(reorder(Provider.Type, mean_number_of_services), mean_number_of_services)) + geom_bar(stat = 'identity') + ggtitle('Average of Number of Services by Provider Type') + labs(y = 'Average of Number of Services', x = 'Provider Type') + theme(axis.text.y = element_text(size = 8)) + coord_flip()
+```
+
+### Function of Average Number of Distinct Beneficiary per Day Services and Provider Type
+```{r, fig.width = 10, fig.height = 10}
+Provider_MNoDMBPDS=providerspokane%>%
+  group_by(Provider.Type)%>%
+  summarise(mean_distinct_beneficiaries=mean(Number.of.Distinct.Medicare.Beneficiary.Per.Day.Services))
+MNoDMBPDS_sort <- arrange(Provider_MNoDMBPDS, desc(mean_distinct_beneficiaries))
+
+ggplot(data = MNoDMBPDS_sort, mapping = aes(reorder(Provider.Type, mean_distinct_beneficiaries), mean_distinct_beneficiaries)) + geom_bar(stat = 'identity') + ggtitle('Average of Number of Distinct Beneficiary per Day Services by Provider Type') + labs(y = 'Average of Number of Distinct Beneficiary per Day Services', x = 'Provider Type') + theme(axis.text.y = element_text(size = 8)) + coord_flip()
+```
+
+### Function of Average Medicare Submitted Charge Amount and Provider Type
+```{r, fig.width = 10, fig.height = 10}
+Provider_ASCA=providerspokane%>%
+  group_by(Provider.Type)%>%
+  summarise(mean_submitted_charge_amount=mean(Average.Submitted.Charge.Amount))
+MSCA_sort <- arrange(Provider_ASCA, desc(mean_submitted_charge_amount))
+
+ggplot(data = MSCA_sort, mapping = aes(reorder(Provider.Type, mean_submitted_charge_amount), mean_submitted_charge_amount)) + geom_bar(stat = 'identity') + ggtitle('Average of the Submitted Charge Amount by Provider Type') + labs(y = 'Average of the Submitted Charge Amount ($)', x = 'Provider Type') + theme(axis.text.y = element_text(size = 8)) + coord_flip()
+```
+
+### Function of Average Medicare Paid and Provider Type
+```{r, fig.width = 10, fig.height = 10}
+Provider_MMP=providerspokane%>%
+  group_by(Provider.Type)%>%
+  summarise(mean_medicare_paid=mean(Average.Medicare.Payment.Amount))
+MMP_sort <- arrange(Provider_MMP, desc(mean_medicare_paid))
+
+ggplot(data = MMP_sort, mapping = aes(reorder(Provider.Type, mean_medicare_paid), mean_medicare_paid)) + geom_bar(stat = 'identity') + ggtitle('Average of Amount Medicare Paid by Provider Type') + labs(y = 'Average of the Amount Medicare Paid ($)', x = 'Provider Type') + theme(axis.text.y = element_text(size = 8)) + coord_flip()
+```
+
+# 2. Distribution Provider Type Functions
+
+### Distribution Function of Number of Services by Provider Type
+```{r, fig.width = 20, fig.height = 15}
+ggplot(providerspokane,aes(Number.of.Services,fill=Provider.Type))+geom_density()+facet_wrap(.~Provider.Type, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Number of Services by Provider Type') + labs(y = 'Density', x = 'Number of Services')
+```
+
+### Distribution Function of Number of Distinct Beneficiary per Day Services by Provider Type
+```{r, fig.width = 20, fig.height = 15}
+ggplot(providerspokane,aes(Number.of.Distinct.Medicare.Beneficiary.Per.Day.Services,fill=Provider.Type))+geom_density()+facet_wrap(.~Provider.Type, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Number of Distinct Beneficiary per Day Services by Provider Type') + labs(y = 'Density', x = 'Number of Distinct Medicare Beneficiary per Day Services')
+```
+
+### Distribution Function of Average Medicare Submitted Charge Amount by Provider Type
+```{r, fig.width = 20, fig.height = 15}
+ggplot(providerspokane,aes(Average.Submitted.Charge.Amount,fill=Provider.Type))+geom_density()+facet_wrap(.~Provider.Type, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Average Medicare Submitted Charge Amount by Provider Type') + labs(y = 'Density', x = 'Average Medicare Submitted Charge ($)')
+```
+
+### Distribution Function of Average Medicare Paid by Provider Type
+```{r, fig.width = 20, fig.height = 15}
+ggplot(providerspokane,aes(Average.Medicare.Payment.Amount,fill=Provider.Type))+geom_density()+facet_wrap(.~Provider.Type, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Average Medicare Payment by Provider Type') + labs(y = 'Density', x = 'Average Medicare Payment ($)')
+```
+
+### Place of Service and average Medicare Paid function
+```{r}
+Place_AMPA = providerspokane%>%
+  group_by(Place.of.Service)%>%
+  summarise(mean_medicare_paid = mean(Average.Medicare.Payment.Amount))
+
+ggplot(Place_AMPA, mapping = aes(Place.of.Service, mean_medicare_paid)) + geom_bar(stat = 'identity')
+```
+
+# 3. Frequency of HCPCS Code Functions
+### Filtered and Sorted Frequency Dataframe
+
+```{r}
+HCPCS_table <- as.data.frame(table(providerspokane$HCPCS.Code))
+HCPCS_sort <- arrange(HCPCS_table, desc(Freq))
+top_25_HCPCS_codes <- head(HCPCS_sort,25)
+
+HCPCS_Desc <- as.data.frame(table(providerspokane$HCPCS.Description))
+HCPCS_Desc_sort <- arrange(HCPCS_Desc, desc(Freq))
+top_25_HCPCS_Desc <- head(HCPCS_Desc_sort,25)
+```
+
+### Frequency of HCPCS Codes
+
+```{r, fig.width = 20, fig.height = 15}
+ggplot(data = HCPCS_Desc_sort, mapping = aes(reorder(Var1, Freq),Freq)) + geom_bar(stat = 'identity') + ggtitle('Frequency Graph of HCPCS Codes') + labs(y = 'Frequency', x = 'HCPCS Code') + theme(axis.text.x = element_blank())
+```
+
+### Distribution of 25 Most Common HCPCS Codes
+
+```{r, fig.width = 10, fig.height = 10}
+ggplot(data = top_25_HCPCS_Desc, mapping = aes(reorder(Var1, Freq),Freq)) + geom_bar(stat = 'identity') + ggtitle('25 Most Common HCPCS Codes') + labs(y = 'Frequency', x = 'HCPCS Code') + theme(axis.text.y = element_text(size = 8)) + coord_flip() + scale_x_discrete(labels=c("Established patient office or other outpatient visit, typically 15 minutes" = "15 minute outpatient visit","Established patient office or other outpatient, visit typically 25 minutes" = "25 minute outpatient visit","New patient office or other outpatient visit, typically 45 minutes" = "45 minute new outpatient visit", "New patient office or other outpatient visit, typically 30 minutes" = "30 minute new outpatient visit", "Subsequent hospital inpatient care, typically 25 minutes per day" = "25 minute hospital inpatient visit", "Established patient office or other outpatient visit, typically 10 minutes" = "10 minute outpatient visit", "Insertion of needle into vein for collection of blood sample" = "Draw blood for sample", "Initial hospital inpatient care, typically 70 minutes per day" = "Initial 70 minute daily inpatient hospital care", "Complete blood cell count (red cells, white blood cell, platelets), automated test" = "Automated complete blood cell count test","Administration of influenza virus vaccine" = "Influenza vaccine (flu shot)", "Established patient office or other outpatient, visit typically 40 minutes" = "40 minute outpatient visit", "Subsequent hospital inpatient care, typically 35 minutes per day" = "35 minute hospital inpatient visit", "Subsequent hospital inpatient care, typically 15 minutes per day" = "15 minute hospital inpatient visit", "X-ray of chest, 2 views, front and side" = "2 Chest X-Rays (front, side)", "Initial hospital inpatient care, typically 50 minutes per day" = "Initial 50 minute inpatient hospital care", "New patient office or other outpatient visit, typically 60 minutes" = "60 minute new outpatient visit", "Blood test, comprehensive group of blood chemicals" = "Comprehensive group blood chem test", "Administration of pneumococcal vaccine" = "pneumococcal vaccine", "Routine EKG using at least 12 leads including interpretation and report" = "Routine EKG (>=12 leads), interpretation, report", "Manual urinalysis test with examination using microscope" = "Manual urinalysis + microscope exam", "Pneumococcal vaccine for injection into muscle" = "Pneumococcal vaccine (muscle injection)", "Therapeutic exercise to develop strength, endurance, range of motion, and flexibility, each 15 minutes" = "Therapeutic exercise 15 mins", "Manual (physical) therapy techniques to 1 or more regions, each 15 minutes" = "15 minute physical therapy (1+ regions)", "Blood test, basic group of blood chemicals" = "Basic group of blood chem test"))
+```
+
+### Distribution Function of Number of Services by HCPCS Code 
+
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_services_sort <- arrange(providerspokane, desc(Number.of.Services))
+HCPCS_services_25 <- as_data_frame(head(HCPCS_services_sort,25))
+
+ggplot(HCPCS_services_25,aes(Number.of.Services,fill=HCPCS.Code))+geom_density()+facet_wrap(.~HCPCS.Code, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Number of Services by HCPCS Code') + labs(y = 'Density', x = 'Number of Services')
+```
+
+### Distribution Function of Distinct Beneficiary per Day Services by HCPCS Code 
+
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_beneficiary_sort <- arrange(providerspokane, desc(Number.of.Distinct.Medicare.Beneficiary.Per.Day.Services))
+HCPCS_beneficiary_25 <- as_data_frame(head(HCPCS_beneficiary_sort,25))
+
+ggplot(HCPCS_beneficiary_25,aes(Number.of.Distinct.Medicare.Beneficiary.Per.Day.Services,fill=HCPCS.Code))+geom_density()+facet_wrap(.~HCPCS.Code, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Distinct Medicare Beneficiary Per Day Services by HCPCS Code') + labs(y = 'Density', x = 'Number of Services')
+```
+
+### Distribution Function of Average Medicare Submitted Charged Amounts by HCPCS Code 
+
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_MedSub_sort <- arrange(providerspokane, desc(Average.Submitted.Charge.Amount))
+HCPCS_MedSub_25 <- as_data_frame(head(HCPCS_MedSub_sort,25))
+
+ggplot(HCPCS_MedSub_25,aes(Average.Submitted.Charge.Amount,fill=HCPCS.Code))+geom_density()+facet_wrap(.~HCPCS.Code, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Average Medicare Submitted Charged Amount by HCPCS Code') + labs(y = 'Density', x = 'Average Amount ($)')
+```
+
+### Distribution Function of Average Medicare Payment by HCPCS Code 
+
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_MedPaid_sort <- arrange(providerspokane, desc(Average.Medicare.Payment.Amount))
+HCPCS_MedPaid_25 <- as_data_frame(head(HCPCS_MedPaid_sort,25))
+
+ggplot(HCPCS_MedPaid_25,aes(Average.Medicare.Payment.Amount,fill=HCPCS.Code))+geom_density()+facet_wrap(.~HCPCS.Code, scales = "free") + theme(legend.position = 'none') + ggtitle('Distribution of Average Medicare Paid by HCPCS Code') + labs(y = 'Density', x = 'Average Medicare Payment ($)')
+```
+
+# 3. Frequency of HCPCS Code Functions
+
+### Function of Average Number of Services and HCPCS Code
+
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_MNoS=providerspokane%>%
+  group_by(HCPCS.Description)%>%
+  summarise(mean_number_of_services=mean(Number.of.Services))
+HCPCS_MNoS_sort <- arrange(HCPCS_MNoS, desc(mean_number_of_services))
+HCPCS_MNoS_sort_25 <- as_data_frame(head(HCPCS_MNoS_sort,25))
+
+ggplot(data = HCPCS_MNoS_sort_25, mapping = aes(reorder(HCPCS.Description, mean_number_of_services), mean_number_of_services)) + geom_bar(stat = 'identity') + ggtitle('Average of Number of Services by HCPCS Code') + labs(y = 'Average of Number of Services', x = 'HCPCS Code') + theme(axis.text.y = element_text(size = 8)) + coord_flip() + scale_x_discrete(labels=c("Travel allowance one way in connection with medically necessary laboratory specimen collection drawn from home bound or nursing home bound patient; prorated trip charge." = "Travel allowance (Necessary lab specimen from home bound patient, prorated trip charge)", "Injection, abatacept, 10 mg (code may be used for medicare when drug administered under the direct supervision of a physician, not for use when drug is self administered)" = "Injection, abatacept, 10 mg (Non-self administered)"))
+```
+
+### Function of Average Number of Distinct Beneficiary per Day Services and HCPCS Code
+
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_MNoDBPDS=providerspokane%>%
+  group_by(HCPCS.Description)%>%
+  summarise(mean_number_of_Beneficiary=mean(Number.of.Distinct.Medicare.Beneficiary.Per.Day.Services))
+HCPCS_MNoDBPDS_sort <- arrange(HCPCS_MNoDBPDS, desc(mean_number_of_Beneficiary))
+HCPCS_MNoDBPDS_sort_25 <- as_data_frame(head(HCPCS_MNoDBPDS_sort,25))
+
+ggplot(data = HCPCS_MNoDBPDS_sort_25, mapping = aes(reorder(HCPCS.Description, mean_number_of_Beneficiary), mean_number_of_Beneficiary)) + geom_bar(stat = 'identity') + ggtitle('Distinct Beneficiary per Day Services by HCPCS Code') + labs(y = 'Average Number of Distinct Beneficiary per Day Services', x = 'HCPCS Code') + theme(axis.text.y = element_text(size = 8)) + coord_flip() + scale_x_discrete(labels=c("Travel allowance one way in connection with medically necessary laboratory specimen collection drawn from home bound or nursing home bound patient; prorated trip charge." = "Travel allowance (Necessary lab specimen from home bound patient, prorated trip charge)", "Ambulance service, basic life support, non-emergency transport, (bls)" = "Basic life support, non emergency ambulance", "Ambulance service, advanced life support, emergency transport, level 1 (als1-emergency)" = "Advanced life support, emergency ambulance", "Ambulance service, basic life support, emergency transport (bls-emergency)" = "Basic life support, emergency ambulance")) +  theme(plot.title = element_text(hjust=0))
+```
+
+### Function of Average Medicare Submitted Charge Amount and HCPCS Code
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_MMSCA=providerspokane%>%
+  group_by(HCPCS.Description)%>%
+  summarise(mean_number_of_submitted=mean(Average.Submitted.Charge.Amount))
+HCPCS_MMSCA_sort <- arrange(HCPCS_MMSCA, desc(mean_number_of_submitted))
+HCPCS_MMSCA_sort_25 <- as_data_frame(head(HCPCS_MMSCA_sort,25))
+
+ggplot(data = HCPCS_MMSCA_sort_25, mapping = aes(reorder(HCPCS.Description, mean_number_of_submitted), mean_number_of_submitted)) + geom_bar(stat = 'identity') + ggtitle('Mean Medicare Submitted Charge Amount by HCPCS Code') + labs(y = 'Average Medicare Submitted Charge Amount ($)', x = 'HCPCS Code') + theme(axis.text.y = element_text(size = 8)) + coord_flip() + scale_x_discrete(labels = c("Anesthesia for procedure on heart and great blood vessels on heart-lung machine, age 1 year or older, or re-operation more than 1 month after original procedure" = "Anesthesia (Procedure on heart and great blood vessels on heart-lung machine (age 1+))", "Open treatment of broken of lower forearm or growth plate separation with insertion of hardware 3 or more fragments" = "Insertion of 3+ hardware fragments to treat broken lower forearm or growthplate separation", "Injection of bone cement into body of middle spine bone accessed through the skin using imaging guidance" = "Image guided injection of bone cement in middle spine through skin", "Injection of bone cement into body of lower spine bone accessed through the skin using imaging guidance" = "Image guided injection of bone cement in lower spine through skin", "Abdominal removal of uterus (250 grams or less) with removal of tubes and/or ovaries using an endoscope" = "Abdominal removal of uterus (<250 g) with tube and/or ovary endoscopic removal", "Ambulance service, conventional air services, transport, one way (rotary wing)" = "One way air ambulance (helicopter)", "Ambulance service, conventional air services, transport, one way (fixed wing)" = "One way air ambulance (fixed wing plane)")) + theme(plot.title = element_text(hjust=0))
+```
+
+### Function of Average Medicare Paid and HCPCS Code
+```{r, fig.width = 10, fig.height = 10}
+HCPCS_MMP=providerspokane%>%
+  group_by(HCPCS.Description)%>%
+  summarise(mean_medicare_paid=mean(Average.Medicare.Payment.Amount))
+HCPCS_MMP_sort <- arrange(HCPCS_MMP, desc(mean_medicare_paid))
+HCPCS_MMP_sort_25 <- as_data_frame(head(HCPCS_MMP_sort,25))
+
+ggplot(data = HCPCS_MMP_sort_25, mapping = aes(reorder(HCPCS.Description, mean_medicare_paid), mean_medicare_paid)) + geom_bar(stat = 'identity') + ggtitle('Average of Amount Medicare Paid by HCPCS Code') + labs(y = 'Average of the Amount Medicare Paid ($)', x = 'HCPCS Code') + theme(axis.text.y = element_text(size = 8)) + coord_flip() + scale_x_discrete(labels= c("Ambulance service, conventional air services, transport, one way (rotary wing)" = "One way air ambulance (helicopter)", "Ambulance service, conventional air services, transport, one way (fixed wing)" = "One way air ambulance (fixed wing plane)", "Open treatment of broken of lower forearm or growth plate separation with insertion of hardware 3 or more fragments" = "Insertion of 3+ hardware pieces to treat broken lower forearm/growthplate separation", "Injection of bone cement into body of middle spine bone accessed through the skin using imaging guidance" = "Image guided injection of bone cement in middle spine through skin", "Injection of bone cement into body of lower spine bone accessed through the skin using imaging guidance" = "Image guided injection of bone cement in lower spine through skin"))
+```
+
+
+### Scatterplot with average submitted charge amount, average medicare payment amount as a function of the beneficiary number of services
+```{r, fig.width = 10}
+ggplot(providerspokane, aes(x=Average.Submitted.Charge.Amount, y=Average.Medicare.Payment.Amount, color=Number.of.Distinct.Medicare.Beneficiary.Per.Day.Services)) +
+  geom_point(size = 1,alpha=.1) + geom_smooth(method = "loess", color ='red') + labs(y = "Average Medicare Payment", x = "Average Submitted Charge Amount", color = "Distinct Beneficiary per Day Services") +ggtitle("Average submitted charge, average medicare payment as a function of beneficiary number of services") + theme(plot.title = element_text(hjust=0, size = 10))
+```
+
+
+
